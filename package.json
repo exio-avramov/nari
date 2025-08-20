@@ -1,0 +1,22 @@
+{
+  "name": "nari",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.55.0",
+    "@tanstack/react-query": "^5.85.5",
+    "@trpc/client": "^11.5.0",
+    "@trpc/react-query": "^11.5.0",
+    "@trpc/server": "^11.5.0",
+    "zod": "^4.0.17"
+  }
+}
