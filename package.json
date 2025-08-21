@@ -3,6 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "migration:generate": "bunx ts-node-esm ./node_modules/typeorm/cli.js migration:generate -d ./db/data_source.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/node": "^24.3.0",
@@ -12,11 +15,15 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.55.0",
     "@tanstack/react-query": "^5.85.5",
     "@trpc/client": "^11.5.0",
     "@trpc/react-query": "^11.5.0",
     "@trpc/server": "^11.5.0",
+    "dotenv": "^17.2.1",
+    "pg": "^8.16.3",
+    "reflect-metadata": "^0.2.2",
+    "ts-node": "^10.9.2",
+    "typeorm": "^0.3.26",
     "zod": "^4.0.17"
   }
 }
