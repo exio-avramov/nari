@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "migration:generate": "bun run ./db/typeorm-scripts/migration-generate.ts"
+    "migration:generate": "bun run ./db/typeorm-scripts/migration-generate.ts",
+    "migration:run": "bun run ./db/typeorm-scripts/migration-run.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
