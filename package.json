@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "migration:generate": "bunx ts-node-esm ./node_modules/typeorm/cli.js migration:generate -d ./db/data_source.ts"
+    "migration:generate": "bun run ./db/typeorm-scripts/migration-generate.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -20,6 +20,7 @@
     "@trpc/react-query": "^11.5.0",
     "@trpc/server": "^11.5.0",
     "dotenv": "^17.2.1",
+    "minimist": "^1.2.8",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
     "ts-node": "^10.9.2",

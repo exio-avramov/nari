@@ -1,14 +1,15 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { env } from "./env.ts";
+import { User } from "./entities/User.ts";
 
 export const AppDataSource = new DataSource({
   url: env.DB_CONNECTION_STRING,
   type: "postgres",
   logging: true,
   synchronize: false,
-  entities: ["./entities/*.ts", "./db/entities/*.ts"],
-  migrations: ["./migrations/*.ts", "./db/entities/*.ts"],
+  entities: [User],
+  migrations: ["./migrations/*.ts"],
 });
 
 export async function getDataSource() {
