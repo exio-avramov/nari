@@ -2,10 +2,12 @@ import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { ThemedButton } from "@/components/ThemedButton";
+import { HelloWave } from "@/components/HelloWave";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ScrollView, View, StyleSheet, Pressable } from "react-native";
 import { router } from "expo-router";
 import { useState } from "react";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export default function SignUpScreen() {
   const [formData, setFormData] = useState({
@@ -15,6 +17,11 @@ export default function SignUpScreen() {
     password: "",
     confirmPassword: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Get themed colors for dynamic theming
+  const borderColor = useThemeColor({}, "icon");
 
   const handleSignUp = () => {
     // TODO: Implement sign-up logic
@@ -29,9 +36,12 @@ export default function SignUpScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <ThemedText type="title" style={styles.title}>
-            Create Account
-          </ThemedText>
+          <View style={styles.titleRow}>
+            <ThemedText type="title" style={styles.title}>
+              Create Account
+            </ThemedText>
+            <HelloWave />
+          </View>
           <ThemedText type="default" style={styles.subtitle}>
             Join our community of parents and nannies
           </ThemedText>
@@ -72,27 +82,53 @@ export default function SignUpScreen() {
             autoComplete="email"
           />
 
-          <ThemedTextInput
-            placeholder="Password"
-            value={formData.password}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, password: text }))
-            }
-            style={styles.input}
-            secureTextEntry
-            autoComplete="new-password"
-          />
+          {/* Password Input with Eye Toggle */}
+          <View style={styles.passwordContainer}>
+            <ThemedTextInput
+              placeholder="Password"
+              value={formData.password}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, password: text }))
+              }
+              style={styles.passwordInput}
+              secureTextEntry={!showPassword}
+              autoComplete="new-password"
+            />
+            <Pressable
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeButton}
+            >
+              <IconSymbol
+                name={showPassword ? "eye.slash" : "eye"}
+                size={20}
+                color={borderColor}
+              />
+            </Pressable>
+          </View>
 
-          <ThemedTextInput
-            placeholder="Confirm Password"
-            value={formData.confirmPassword}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, confirmPassword: text }))
-            }
-            style={styles.input}
-            secureTextEntry
-            autoComplete="new-password"
-          />
+          {/* Confirm Password Input with Eye Toggle */}
+          <View style={styles.passwordContainer}>
+            <ThemedTextInput
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, confirmPassword: text }))
+              }
+              style={styles.passwordInput}
+              secureTextEntry={!showConfirmPassword}
+              autoComplete="new-password"
+            />
+            <Pressable
+              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              style={styles.eyeButton}
+            >
+              <IconSymbol
+                name={showConfirmPassword ? "eye.slash" : "eye"}
+                size={20}
+                color={borderColor}
+              />
+            </Pressable>
+          </View>
 
           {/* Terms and Conditions */}
           <View style={styles.termsContainer}>
@@ -143,11 +179,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 40,
   },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
   title: {
     fontSize: 32,
     fontWeight: "700",
-    marginBottom: 8,
     textAlign: "center",
+    marginRight: 8,
   },
   subtitle: {
     fontSize: 16,
@@ -165,6 +206,18 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 16,
+  },
+  passwordContainer: {
+    position: "relative",
+    marginBottom: 16,
+  },
+  passwordInput: {
+    paddingRight: 50,
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 16,
+    top: 16,
   },
   halfInput: {
     flex: 1,

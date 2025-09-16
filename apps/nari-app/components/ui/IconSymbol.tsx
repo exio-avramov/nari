@@ -19,6 +19,8 @@ const MAPPING = {
   magnifyingglass: "search",
   chat: "chat-bubble-outline",
   account: "person-outline",
+  eye: "visibility",
+  "eye.slash": "visibility-off",
 } as IconMapping;
 
 /**

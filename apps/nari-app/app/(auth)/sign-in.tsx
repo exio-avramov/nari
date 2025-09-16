@@ -4,6 +4,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { ThemedButton } from "@/components/ThemedButton";
 import { HelloWave } from "@/components/HelloWave";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ScrollView, View, StyleSheet, Pressable } from "react-native";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -15,9 +16,11 @@ export default function SignIn() {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   // Get themed colors for dynamic theming
   const dividerColor = useThemeColor({}, "icon");
+  const borderColor = useThemeColor({}, "icon");
 
   const handleSignIn = () => {
     // TODO: Implement sign-in logic
@@ -64,16 +67,29 @@ export default function SignIn() {
             autoComplete="email"
           />
 
-          <ThemedTextInput
-            placeholder="Password"
-            value={formData.password}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, password: text }))
-            }
-            style={styles.input}
-            secureTextEntry
-            autoComplete="current-password"
-          />
+          {/* Password Input with Eye Toggle */}
+          <View style={styles.passwordContainer}>
+            <ThemedTextInput
+              placeholder="Password"
+              value={formData.password}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, password: text }))
+              }
+              style={styles.passwordInput}
+              secureTextEntry={!showPassword}
+              autoComplete="current-password"
+            />
+            <Pressable
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeButton}
+            >
+              <IconSymbol
+                name={showPassword ? "eye.slash" : "eye"}
+                size={20}
+                color={borderColor}
+              />
+            </Pressable>
+          </View>
 
           {/* Sign In Button */}
           <ThemedButton
@@ -160,6 +176,18 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 16,
+  },
+  passwordContainer: {
+    position: "relative",
+    marginBottom: 16,
+  },
+  passwordInput: {
+    paddingRight: 50,
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 16,
+    top: 16,
   },
   signInButton: {
     marginBottom: 24,
