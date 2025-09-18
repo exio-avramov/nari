@@ -6,12 +6,11 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { SessionProvider } from "@/components/auth/SessionProvider";
-import { SplashScreenController } from "@/components/Splash";
-import { useSession } from "@/components/auth/useSession";
+import { useAuth } from "@/components/auth/useAuth";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const { session } = useSession();
+  const { session } = useAuth();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });

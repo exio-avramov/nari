@@ -2,10 +2,10 @@ import { AuthContext } from "@/components/auth/AuthContext";
 import { use } from "react";
 
 // Use this hook to access the user info.
-export function useSession() {
+export function useAuth() {
   const value = use(AuthContext);
   if (!value) {
-    throw new Error("useSession must be wrapped in a <SessionProvider />");
+    throw new Error("useAuth must be wrapped in a <AuthProvider />");
   }
   return value;
 }
