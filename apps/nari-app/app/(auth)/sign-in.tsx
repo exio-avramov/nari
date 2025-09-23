@@ -41,10 +41,7 @@ export default function SignIn() {
   // Get themed colors for dynamic theming
   const dividerColor = useThemeColor({}, "icon");
   const borderColor = useThemeColor({}, "icon");
-  const errorColor = useThemeColor(
-    { light: "#DC2626", dark: "#EF4444" },
-    "text"
-  );
+  const errorColor = useThemeColor({}, "errorMessage");
 
   const validateField = (field: keyof SignInFormData, value: string) => {
     try {
@@ -75,6 +72,7 @@ export default function SignIn() {
       console.log("Sign in with:", validatedData);
       await signInWithEmail(validatedData.email, validatedData.password);
     } catch (error) {
+      console.log("Sign-in error:", error);
       if (error instanceof z.ZodError) {
         const fieldErrors: Partial<Record<keyof SignInFormData, string>> = {};
         error.issues.forEach((err) => {

@@ -8,9 +8,33 @@ import { ScrollView, View, StyleSheet, Pressable } from "react-native";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { useAuth } from "@/components/auth/useAuth";
+import z from "zod";
+import Environment from "@/constants/Environment";
 
+const signUpSchema = z
+  .object({
+    firstName: z.string().nonempty("First name is required"),
+    lastName: z.string().nonempty("Last name is required"),
+    email: z.email("Please enter a valid email address"),
+    password: z
+      .string()
+      .nonempty("Password is required")
+      .min(
+        Environment.REQUIREMENTS_MIN_PASSWORD_LENGTH,
+        `Password must be at least ${Environment.REQUIREMENTS_MIN_PASSWORD_LENGTH} characters`
+      ),
+    confirmPassword: z.string().nonempty("Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"], // Specify which field gets the error
+  });
+
+type SignUpFormData = z.infer<typeof signUpSchema>;
 export default function SignUpScreen() {
-  const [formData, setFormData] = useState({
+  const { signUpWithEmail } = useAuth();
+  const [formData, setFormData] = useState<SignUpFormData>({
     firstName: "",
     lastName: "",
     email: "",
@@ -19,6 +43,11 @@ export default function SignUpScreen() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof SignUpFormData, string>>
+  >({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const errorColor = useThemeColor({}, "errorMessage");
 
   // Get themed colors for dynamic theming
   const borderColor = useThemeColor({}, "icon");
@@ -26,6 +55,24 @@ export default function SignUpScreen() {
   const handleSignUp = () => {
     // TODO: Implement sign-up logic
     console.log("Sign up with:", formData);
+  };
+
+  const validateField = (field: keyof SignUpFormData, value: string) => {
+    try {
+      signUpSchema.shape[field].parse(value);
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setErrors((prev) => ({ ...prev, [field]: error.issues[0].message }));
+      }
+    }
+  };
+
+  const onTextChange = (field: keyof SignUpFormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      validateField(field, value);
+    }
   };
 
   return (
@@ -50,84 +97,145 @@ export default function SignUpScreen() {
         {/* Form */}
         <View style={styles.form}>
           <View style={styles.nameRow}>
-            <ThemedTextInput
-              placeholder="First Name"
-              value={formData.firstName}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, firstName: text }))
-              }
-              style={[styles.input, styles.halfInput]}
-              autoCapitalize="words"
-            />
-            <ThemedTextInput
-              placeholder="Last Name"
-              value={formData.lastName}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, lastName: text }))
-              }
-              style={[styles.input, styles.halfInput]}
-              autoCapitalize="words"
-            />
+            <View style={[styles.inputContainer, { flex: 1 }]}>
+              <ThemedTextInput
+                placeholder="First Name"
+                value={formData.firstName}
+                onChangeText={(text) => onTextChange("firstName", text)}
+                onBlur={() => validateField("firstName", formData.firstName)}
+                style={[
+                  styles.input,
+                  errors.firstName && {
+                    borderColor: errorColor,
+                    borderWidth: 1,
+                  },
+                ]}
+                autoCapitalize="words"
+              />
+              {errors.firstName && (
+                <ThemedText style={[styles.errorText, { color: errorColor }]}>
+                  {errors.firstName}
+                </ThemedText>
+              )}
+            </View>
+
+            <View style={[styles.inputContainer, { flex: 1 }]}>
+              <ThemedTextInput
+                placeholder="Last Name"
+                value={formData.lastName}
+                onChangeText={(text) => onTextChange("lastName", text)}
+                onBlur={() => validateField("lastName", formData.lastName)}
+                style={[
+                  styles.input,
+                  errors.lastName && {
+                    borderColor: errorColor,
+                    borderWidth: 1,
+                  },
+                ]}
+                autoCapitalize="words"
+              />
+              {errors.lastName && (
+                <ThemedText style={[styles.errorText, { color: errorColor }]}>
+                  {errors.lastName}
+                </ThemedText>
+              )}
+            </View>
           </View>
 
-          <ThemedTextInput
-            placeholder="Email Address"
-            value={formData.email}
-            onChangeText={(text) =>
-              setFormData((prev) => ({ ...prev, email: text }))
-            }
-            style={styles.input}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-          />
+          {/* Email Input */}
+          <View style={styles.inputContainer}>
+            <ThemedTextInput
+              placeholder="Email Address"
+              value={formData.email}
+              onChangeText={(text) => onTextChange("email", text)}
+              onBlur={() => validateField("email", formData.email)}
+              style={[
+                styles.input,
+                errors.email && { borderColor: errorColor, borderWidth: 1 },
+              ]}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+            />
+            {errors.email && (
+              <ThemedText style={[styles.errorText, { color: errorColor }]}>
+                {errors.email}
+              </ThemedText>
+            )}
+          </View>
 
           {/* Password Input with Eye Toggle */}
-          <View style={styles.passwordContainer}>
-            <ThemedTextInput
-              placeholder="Password"
-              value={formData.password}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, password: text }))
-              }
-              style={styles.passwordInput}
-              secureTextEntry={!showPassword}
-              autoComplete="new-password"
-            />
-            <Pressable
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeButton}
-            >
-              <IconSymbol
-                name={showPassword ? "eye.slash" : "eye"}
-                size={20}
-                color={borderColor}
+          <View style={styles.inputContainer}>
+            <View style={styles.passwordContainer}>
+              <ThemedTextInput
+                placeholder="Password"
+                value={formData.password}
+                onChangeText={(text) => onTextChange("password", text)}
+                onBlur={() => validateField("password", formData.password)}
+                style={[
+                  styles.passwordInput,
+                  errors.password && {
+                    borderColor: errorColor,
+                    borderWidth: 1,
+                  },
+                ]}
+                secureTextEntry={!showPassword}
+                autoComplete="new-password"
               />
-            </Pressable>
+              <Pressable
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeButton}
+              >
+                <IconSymbol
+                  name={showPassword ? "eye.slash" : "eye"}
+                  size={20}
+                  color={borderColor}
+                />
+              </Pressable>
+            </View>
+            {errors.password && (
+              <ThemedText style={[styles.errorText, { color: errorColor }]}>
+                {errors.password}
+              </ThemedText>
+            )}
           </View>
 
           {/* Confirm Password Input with Eye Toggle */}
-          <View style={styles.passwordContainer}>
-            <ThemedTextInput
-              placeholder="Confirm Password"
-              value={formData.confirmPassword}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, confirmPassword: text }))
-              }
-              style={styles.passwordInput}
-              secureTextEntry={!showConfirmPassword}
-              autoComplete="new-password"
-            />
-            <Pressable
-              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-              style={styles.eyeButton}
-            >
-              <IconSymbol
-                name={showConfirmPassword ? "eye.slash" : "eye"}
-                size={20}
-                color={borderColor}
+          <View style={styles.inputContainer}>
+            <View style={styles.passwordContainer}>
+              <ThemedTextInput
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChangeText={(text) => onTextChange("confirmPassword", text)}
+                onBlur={() =>
+                  validateField("confirmPassword", formData.confirmPassword)
+                }
+                style={[
+                  styles.passwordInput,
+                  errors.confirmPassword && {
+                    borderColor: errorColor,
+                    borderWidth: 1,
+                  },
+                ]}
+                secureTextEntry={!showConfirmPassword}
+                autoComplete="new-password"
               />
-            </Pressable>
+              <Pressable
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={styles.eyeButton}
+              >
+                <IconSymbol
+                  name={showConfirmPassword ? "eye.slash" : "eye"}
+                  size={20}
+                  color={borderColor}
+                />
+              </Pressable>
+            </View>
+            {errors.confirmPassword && (
+              <ThemedText style={[styles.errorText, { color: errorColor }]}>
+                {errors.confirmPassword}
+              </ThemedText>
+            )}
           </View>
 
           {/* Terms and Conditions */}
@@ -202,14 +310,15 @@ const styles = StyleSheet.create({
   nameRow: {
     flexDirection: "row",
     gap: 12,
+  },
+  inputContainer: {
     marginBottom: 16,
   },
   input: {
-    marginBottom: 16,
+    marginBottom: 0,
   },
   passwordContainer: {
     position: "relative",
-    marginBottom: 16,
   },
   passwordInput: {
     paddingRight: 50,
@@ -218,9 +327,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     top: 16,
-  },
-  halfInput: {
-    flex: 1,
   },
   termsContainer: {
     marginBottom: 24,
@@ -246,5 +352,10 @@ const styles = StyleSheet.create({
   signInLink: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  errorText: {
+    fontSize: 14,
+    marginTop: 4,
+    marginLeft: 4,
   },
 });

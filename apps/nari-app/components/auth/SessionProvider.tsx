@@ -2,7 +2,11 @@ import { PropsWithChildren, useEffect, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import { AppState } from "react-native";
 import { supabase } from "@/dataprovider/supabase";
-import { Session } from "@supabase/supabase-js";
+import {
+  AuthResponse,
+  AuthTokenResponsePassword,
+  Session,
+} from "@supabase/supabase-js";
 
 // Tells Supabase Auth to continuously refresh the session automatically if
 // the app is in the foreground. When this is added, you will continue to receive
@@ -28,8 +32,26 @@ export function SessionProvider({ children }: PropsWithChildren) {
     });
   }, []);
 
-  const signInWithEmail = async (email: string, password: string) => {
-    await supabase.auth.signInWithPassword({ email, password });
+  const signInWithEmail = async (
+    email: string,
+    password: string
+  ): Promise<AuthTokenResponsePassword> => {
+    var response = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    return response;
+  };
+
+  const signUpWithEmail = async (
+    email: string,
+    password: string
+  ): Promise<AuthResponse> => {
+    const response = await supabase.auth.signUp({
+      email,
+      password,
+    });
+    return response;
   };
 
   const signOut = async () => {
@@ -40,6 +62,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     <AuthContext
       value={{
         signInWithEmail: signInWithEmail,
+        signUpWithEmail: signUpWithEmail,
         signOut: signOut,
         session,
       }}
