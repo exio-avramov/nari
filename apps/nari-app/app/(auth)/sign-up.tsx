@@ -11,12 +11,19 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { useAuth } from "@/components/auth/useAuth";
 import z from "zod";
 import Environment from "@/constants/Environment";
-
+import {
+  CountryCode,
+  CountryCodeList,
+} from "react-native-country-picker-modal";
+import { ThemedPhoneNumberInput } from "@/components/ThemedPhoneNumberInput";
+const countryCodeSet = new Set(CountryCodeList);
 const signUpSchema = z
   .object({
     firstName: z.string().nonempty("First name is required"),
     lastName: z.string().nonempty("Last name is required"),
     email: z.email("Please enter a valid email address"),
+    phone: z.string().nonempty("Phone number is required"),
+    countryCode: z.string().nonempty("Country code is required"),
     password: z
       .string()
       .nonempty("Password is required")
@@ -26,9 +33,25 @@ const signUpSchema = z
       ),
     confirmPassword: z.string().nonempty("Please confirm your password"),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"], // Specify which field gets the error
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Passwords do not match",
+        path: ["confirmPassword"], // Specify which field gets the error
+      });
+    }
+
+    if (
+      data.countryCode.length !== 2 ||
+      !countryCodeSet.has(data.countryCode.toUpperCase() as CountryCode)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Invalid country code",
+        path: ["phone"],
+      });
+    }
   });
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
@@ -38,11 +61,14 @@ export default function SignUpScreen() {
     firstName: "",
     lastName: "",
     email: "",
+    phone: "",
+    countryCode: "BG" as CountryCode,
     password: "",
     confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPhoneCountryPicker, setShowPhoneCountryPicker] = useState(false);
   const [errors, setErrors] = useState<
     Partial<Record<keyof SignUpFormData, string>>
   >({});
@@ -98,6 +124,7 @@ export default function SignUpScreen() {
         <View style={styles.form}>
           <View style={styles.nameRow}>
             <View style={[styles.inputContainer, { flex: 1 }]}>
+              {/* First Name Input */}
               <ThemedTextInput
                 placeholder="First Name"
                 value={formData.firstName}
@@ -119,6 +146,7 @@ export default function SignUpScreen() {
               )}
             </View>
 
+            {/* Last Name Input */}
             <View style={[styles.inputContainer, { flex: 1 }]}>
               <ThemedTextInput
                 placeholder="Last Name"
@@ -164,6 +192,27 @@ export default function SignUpScreen() {
             )}
           </View>
 
+          <View style={styles.inputContainer}>
+            <ThemedPhoneNumberInput
+              phoneValue={formData.phone}
+              countryCode={formData.countryCode as CountryCode}
+              onBlur={() => validateField("phone", formData.phone)}
+              onPhoneChange={(phone: string) => onTextChange("phone", phone)}
+              onCountryCodeChange={(code: CountryCode) => {
+                onTextChange("countryCode", code);
+                validateField("countryCode", code);
+              }}
+              style={[
+                styles.input,
+                errors.phone && { borderColor: errorColor, borderWidth: 1 },
+              ]}
+            />
+            {errors.phone && (
+              <ThemedText style={[styles.errorText, { color: errorColor }]}>
+                {errors.phone}
+              </ThemedText>
+            )}
+          </View>
           {/* Password Input with Eye Toggle */}
           <View style={styles.inputContainer}>
             <View style={styles.passwordContainer}>
