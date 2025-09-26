@@ -10,12 +10,35 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { useAuth } from "@/components/auth/useAuth";
 import z from "zod";
 import Environment from "@/constants/Environment";
-import {
-  CountryCode,
-  CountryCodeList,
-} from "react-native-country-picker-modal";
 import { ThemedPhoneNumberInput } from "@/components/ThemedPhoneNumberInput";
-const countryCodeSet = new Set(CountryCodeList);
+import {
+  isValidPhoneNumber,
+  CountryCode,
+  getCountries,
+  parsePhoneNumberWithError,
+  getCountryCallingCode,
+} from "libphonenumber-js";
+
+const normalizePhoneNumber = (
+  phoneInput: string,
+  countryCode: CountryCode
+): string => {
+  try {
+    const phoneNumber = parsePhoneNumberWithError(phoneInput, countryCode);
+
+    if (phoneNumber) {
+      // Return the national number without leading zeros
+      return phoneNumber.nationalNumber;
+    }
+
+    // If parsing fails, manually remove leading zeros and non-digits
+    return phoneInput.replace(/^0+/, "").replace(/[^0-9]/g, "");
+  } catch (error) {
+    // Fallback: remove leading zeros and non-digits
+    return phoneInput.replace(/^0+/, "").replace(/[^0-9]/g, "");
+  }
+};
+
 const signUpSchema = z
   .object({
     firstName: z.string().nonempty("First name is required"),
@@ -43,11 +66,25 @@ const signUpSchema = z
 
     if (
       data.countryCode.length !== 2 ||
-      !countryCodeSet.has(data.countryCode.toUpperCase() as CountryCode)
+      !getCountries().includes(data.countryCode.toUpperCase() as CountryCode)
     ) {
       ctx.addIssue({
         code: "custom",
         message: "Invalid country code",
+        path: ["phone"],
+      });
+    }
+
+    // Normalize the phone number for validation
+    const normalizedPhone = normalizePhoneNumber(
+      data.phone,
+      data.countryCode as CountryCode
+    );
+
+    if (!isValidPhoneNumber(normalizedPhone, data.countryCode as CountryCode)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Invalid phone number",
         path: ["phone"],
       });
     }
@@ -67,7 +104,6 @@ export default function SignUpScreen() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showPhoneCountryPicker, setShowPhoneCountryPicker] = useState(false);
   const [errors, setErrors] = useState<
     Partial<Record<keyof SignUpFormData, string>>
   >({});
@@ -77,9 +113,32 @@ export default function SignUpScreen() {
   // Get themed colors for dynamic theming
   const borderColor = useThemeColor({}, "icon");
 
-  const handleSignUp = () => {
-    // TODO: Implement sign-up logic
-    console.log("Sign up with:", formData);
+  const handleSignUp = async () => {
+    try {
+      setIsSubmitting(true);
+      setErrors({});
+
+      // Validate the entire form
+      const validatedData = signUpSchema.parse(formData);
+      const callingCode = getCountryCallingCode(
+        validatedData.countryCode as CountryCode
+      );
+      ///TODO: handle registration
+      console.log("Sign up with:", validatedData);
+      //await signUpWithEmail(validatedData.email, validatedData.password);
+    } catch (error) {
+      console.log("Sign-in error:", error);
+      if (error instanceof z.ZodError) {
+        const fieldErrors: Partial<Record<keyof SignUpFormData, string>> = {};
+        error.issues.forEach((err) => {
+          const fieldName = err.path[0] as keyof SignUpFormData;
+          fieldErrors[fieldName] = err.message;
+        });
+        setErrors(fieldErrors);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const validateField = (field: keyof SignUpFormData, value: string) => {
@@ -89,6 +148,40 @@ export default function SignUpScreen() {
     } catch (error) {
       if (error instanceof z.ZodError) {
         setErrors((prev) => ({ ...prev, [field]: error.issues[0].message }));
+      }
+    }
+  };
+
+  const onPhoneChange = (phoneValue: string, explicitValidation?: boolean) => {
+    const normalizedPhone = normalizePhoneNumber(
+      phoneValue,
+      formData.countryCode as CountryCode
+    );
+    setFormData((prev) => ({ ...prev, phone: normalizedPhone }));
+
+    if (explicitValidation || errors.phone) {
+      try {
+        signUpSchema.shape.phone.parse(normalizedPhone);
+        if (
+          !isValidPhoneNumber(
+            normalizedPhone,
+            formData.countryCode as CountryCode
+          )
+        ) {
+          throw new z.ZodError([
+            {
+              code: "custom",
+              message: "Invalid phone number",
+              path: ["phone"],
+            },
+          ]);
+        }
+
+        setErrors((prev) => ({ ...prev, phone: undefined }));
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          setErrors((prev) => ({ ...prev, phone: error.issues[0].message }));
+        }
       }
     }
   };
@@ -194,8 +287,8 @@ export default function SignUpScreen() {
             <ThemedPhoneNumberInput
               phoneValue={formData.phone}
               countryCode={formData.countryCode as CountryCode}
-              onBlur={() => validateField("phone", formData.phone)}
-              onPhoneChange={(phone: string) => onTextChange("phone", phone)}
+              onBlur={() => onPhoneChange(formData.phone, true)}
+              onPhoneChange={onPhoneChange}
               onCountryCodeChange={(code: CountryCode) => {
                 onTextChange("countryCode", code);
                 validateField("countryCode", code);
@@ -296,7 +389,7 @@ export default function SignUpScreen() {
 
           {/* Sign Up Button */}
           <ThemedButton
-            title="Create Account"
+            title={isSubmitting ? "Creating Account..." : "Create Account"}
             variant="filled"
             size="large"
             onPress={handleSignUp}
