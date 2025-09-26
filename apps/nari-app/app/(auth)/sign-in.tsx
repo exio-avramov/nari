@@ -3,7 +3,6 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { ThemedButton } from "@/components/ThemedButton";
-import { HelloWave } from "@/components/HelloWave";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ScrollView, View, StyleSheet, Pressable } from "react-native";
 import { router } from "expo-router";
@@ -103,7 +102,6 @@ export default function SignIn() {
             <ThemedText type="title" style={styles.title}>
               Welcome
             </ThemedText>
-            <HelloWave />
           </View>
           <ThemedText type="default" style={styles.subtitle}>
             Sign in to your account
@@ -175,7 +173,7 @@ export default function SignIn() {
           {/* Sign In Button */}
           <ThemedButton
             title={isSubmitting ? "Signing In..." : "Sign In"}
-            variant="primary"
+            variant="filled"
             size="large"
             onPress={handleSignIn}
             style={styles.signInButton}

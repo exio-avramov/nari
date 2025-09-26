@@ -2,7 +2,6 @@ import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { ThemedButton } from "@/components/ThemedButton";
-import { HelloWave } from "@/components/HelloWave";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ScrollView, View, StyleSheet, Pressable } from "react-native";
 import { router } from "expo-router";
@@ -113,7 +112,6 @@ export default function SignUpScreen() {
             <ThemedText type="title" style={styles.title}>
               Create Account
             </ThemedText>
-            <HelloWave />
           </View>
           <ThemedText type="default" style={styles.subtitle}>
             Join our community of parents and nannies
@@ -299,7 +297,7 @@ export default function SignUpScreen() {
           {/* Sign Up Button */}
           <ThemedButton
             title="Create Account"
-            variant="primary"
+            variant="filled"
             size="large"
             onPress={handleSignUp}
             style={styles.signUpButton}

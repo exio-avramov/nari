@@ -1,8 +1,8 @@
-import { TextInputProps, View, StyleSheet } from "react-native";
+import { TextInputProps, View, StyleSheet, useColorScheme } from "react-native";
 import { ThemedTextInput } from "./ThemedTextInput";
 import { useState } from "react";
-import { CountryCode } from "react-native-country-picker-modal";
-import CountryPicker from "react-native-country-picker-modal";
+import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export type ThemedPhoneNumberInputProps = TextInputProps & {
   phoneValue: string;
@@ -21,10 +21,18 @@ export function ThemedPhoneNumberInput({
   ...rest
 }: ThemedPhoneNumberInputProps) {
   const [isPickerVisible, setIsPickerVisible] = useState(false);
+  const textColor = useThemeColor({}, "text");
+  const backgroundColor = useThemeColor({}, "background");
+
   return (
     <View style={styles.container}>
       <CountryPicker
-        containerButtonStyle={{ ...styles.countryButton }}
+        // containerButtonStyle={{ ...styles.countryButton }}
+        modalProps={{ style: { marginTop: 50 } }}
+        theme={{
+          onBackgroundTextColor: textColor,
+          backgroundColor: backgroundColor,
+        }}
         countryCode={countryCode}
         withCallingCodeButton
         withCallingCode

@@ -1,10 +1,10 @@
-import { Pressable, PressableProps } from "react-native";
+import { Pressable, PressableProps, ViewStyle } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { ThemedText } from "./ThemedText";
 
 export type ThemedButtonProps = PressableProps & {
   title: string;
-  variant?: "primary" | "secondary" | "outline";
+  variant?: "filled" | "outline";
   size?: "small" | "medium" | "large";
   lightColor?: string;
   darkColor?: string;
@@ -12,65 +12,64 @@ export type ThemedButtonProps = PressableProps & {
 
 export function ThemedButton({
   title,
-  variant = "primary",
+  variant = "filled",
   size = "medium",
   style,
   lightColor,
   darkColor,
   ...rest
 }: ThemedButtonProps) {
-  const tintColor = useThemeColor({}, "tint");
+  const buttonBackground = useThemeColor({}, "buttonBackground");
+  const onBackgroundTextColor = useThemeColor({}, "buttonText");
   const textColor = useThemeColor({}, "text");
-  const backgroundColor = useThemeColor(
-    { light: lightColor, dark: darkColor },
-    "background"
-  );
 
-  const getButtonStyle = () => {
-    const baseStyle = {
+  const getButtonStyle = (): ViewStyle[] => {
+    const baseStyle: ViewStyle = {
       borderRadius: 12,
-      alignItems: "center" as const,
-      justifyContent: "center" as const,
+      alignItems: "center",
+      justifyContent: "center",
     };
 
-    const sizeStyles = {
+    const sizeStyles: Record<typeof size, ViewStyle> = {
       small: { paddingHorizontal: 16, paddingVertical: 8 },
       medium: { paddingHorizontal: 24, paddingVertical: 12 },
       large: { paddingHorizontal: 32, paddingVertical: 16 },
     };
 
-    const variantStyles = {
-      primary: { backgroundColor: tintColor },
-      secondary: {
-        backgroundColor: backgroundColor,
-        borderWidth: 1,
-        borderColor: tintColor,
-      },
+    const variantStyles: Record<typeof variant, ViewStyle> = {
+      filled: { backgroundColor: buttonBackground },
       outline: {
         backgroundColor: "transparent",
         borderWidth: 1,
-        borderColor: tintColor,
+        borderColor: buttonBackground,
       },
     };
 
     return [baseStyle, sizeStyles[size], variantStyles[variant]];
   };
 
-  const getTextColor = () => {
-    if (variant === "primary") return "#fff";
-    return tintColor;
+  const getButtonTextColor = (): string => {
+    if (variant === "filled") {
+      return onBackgroundTextColor;
+    } else {
+      return textColor;
+    }
   };
 
   return (
     <Pressable
-      style={({ pressed, hovered }) => [
-        getButtonStyle(),
-        { opacity: pressed ? 0.8 : 1 },
-        typeof style === "function" ? style({ pressed, hovered }) : style,
-      ]}
+      style={({ pressed, hovered }) => {
+        const resolvedStyle =
+          typeof style === "function" ? style({ pressed, hovered }) : style;
+        return [
+          ...getButtonStyle(),
+          { opacity: pressed ? 0.8 : 1 },
+          resolvedStyle,
+        ];
+      }}
       {...rest}
     >
-      <ThemedText style={{ color: getTextColor(), fontWeight: "600" }}>
+      <ThemedText style={{ color: getButtonTextColor(), fontWeight: "600" }}>
         {title}
       </ThemedText>
     </Pressable>
