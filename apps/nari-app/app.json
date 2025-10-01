@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "nari-app",
-    "slug": "nari-app",
+    "slug": "nari",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "nariapp",
+    "scheme": "nari.app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.nariapp"
     },
     "web": {
       "bundler": "metro",
@@ -39,6 +40,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "dd4f1511-3716-4127-a3ee-d6d2a05081e3"
+      }
+    },
+    "owner": "exio.avramov"
   }
 }

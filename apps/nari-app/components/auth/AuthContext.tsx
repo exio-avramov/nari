@@ -11,7 +11,11 @@ export const AuthContext = createContext<{
     password: string
   ) => Promise<AuthTokenResponsePassword>;
   signOut: () => Promise<void>;
-  signUpWithEmail: (email: string, password: string) => Promise<AuthResponse>;
+  signUpWithEmail: (
+    email: string,
+    password: string,
+    phone: string
+  ) => Promise<AuthResponse>;
   session?: Session | null;
 }>({
   signInWithEmail: (email: string, password: string) =>

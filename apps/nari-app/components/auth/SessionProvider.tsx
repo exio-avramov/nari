@@ -2,11 +2,12 @@ import { PropsWithChildren, useEffect, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import { AppState } from "react-native";
 import { supabase } from "@/dataprovider/supabase";
-import {
-  AuthResponse,
-  AuthTokenResponsePassword,
-  Session,
-} from "@supabase/supabase-js";
+import { getQueryParams } from "expo-auth-session/build/QueryParams";
+import { Session } from "@supabase/supabase-js";
+import { getLinkingURL } from "expo-linking";
+import { signInWithEmail } from "./functions/sign-in";
+import { signUpWithEmail } from "./functions/sign-up";
+import { signOut } from "./functions/sign-out";
 
 // Tells Supabase Auth to continuously refresh the session automatically if
 // the app is in the foreground. When this is added, you will continue to receive
@@ -22,6 +23,7 @@ AppState.addEventListener("change", (state) => {
 
 export function SessionProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null);
+  console.log({ session });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -32,31 +34,30 @@ export function SessionProvider({ children }: PropsWithChildren) {
     });
   }, []);
 
-  const signInWithEmail = async (
-    email: string,
-    password: string
-  ): Promise<AuthTokenResponsePassword> => {
-    var response = await supabase.auth.signInWithPassword({
-      email,
-      password,
+  const createSessionFromUrl = async (url: string) => {
+    const { params, errorCode } = getQueryParams(url);
+    if (errorCode) throw new Error(errorCode);
+
+    const { accessToken, refreshToken } = params;
+    if (!accessToken) return;
+
+    const { data, error } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
     });
-    return response;
+
+    if (error) throw error;
+
+    return data.session;
   };
 
-  const signUpWithEmail = async (
-    email: string,
-    password: string
-  ): Promise<AuthResponse> => {
-    const response = await supabase.auth.signUp({
-      email,
-      password,
+  const url = getLinkingURL();
+  console.log({ url });
+  if (url) {
+    createSessionFromUrl(url).catch((error) => {
+      console.error("Error creating session from URL:", error);
     });
-    return response;
-  };
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-  };
+  }
 
   return (
     <AuthContext

@@ -3,7 +3,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { ThemedButton } from "@/components/ThemedButton";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { ScrollView, View, StyleSheet, Pressable } from "react-native";
+import { ScrollView, View, StyleSheet, Pressable, Alert } from "react-native";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useThemeColor } from "@/hooks/useThemeColor";
@@ -123,9 +123,21 @@ export default function SignUpScreen() {
       const callingCode = getCountryCallingCode(
         validatedData.countryCode as CountryCode
       );
-      ///TODO: handle registration
-      console.log("Sign up with:", validatedData);
-      //await signUpWithEmail(validatedData.email, validatedData.password);
+      console.log("Sign up with:", validatedData, callingCode);
+      const {
+        data: { session },
+        error,
+      } = await signUpWithEmail(
+        validatedData.email,
+        validatedData.password,
+        `+${callingCode}${validatedData.phone}`
+      );
+
+      if (error) Alert.alert("Sign Up Error", error.message);
+      if (!session)
+        Alert.alert("Please check your email to confirm your account");
+
+      setIsSubmitting(false);
     } catch (error) {
       console.log("Sign-in error:", error);
       if (error instanceof z.ZodError) {
