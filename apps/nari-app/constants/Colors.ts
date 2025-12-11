@@ -17,6 +17,13 @@ export const Colors = {
     // Higher contrast vs light background
     buttonBackground: "#055E7A",
     buttonText: "#FFFFFF",
+
+    // Bottom sheet styling
+    backdrop: "#000000",
+    bottomSheetBackground: "#FFFFFF",
+    bottomSheetHandle: "#D1D5DB",
+    bottomSheetBorder: "#E5E7EB",
+    bottomSheetSelectedItem: "#c5e5f0", // Light blue tint
   },
   dark: {
     text: "#E6EEF1",
@@ -31,5 +38,12 @@ export const Colors = {
     // Higher contrast vs dark background
     buttonBackground: "#1BA5D2",
     buttonText: "#002A36",
+
+    // Bottom sheet styling
+    backdrop: "#000000",
+    bottomSheetBackground: "#1F2527",
+    bottomSheetHandle: "#4B5563",
+    bottomSheetBorder: "#374151",
+    bottomSheetSelectedItem: "#07303d", // Darker blue tint
   },
 };

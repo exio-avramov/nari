@@ -1,9 +1,19 @@
-import { TextInputProps, View, StyleSheet, useColorScheme } from "react-native";
+import {
+  TextInputProps,
+  View,
+  StyleSheet,
+  Pressable,
+  Text,
+} from "react-native";
 import { ThemedTextInput } from "./ThemedTextInput";
-import { useState } from "react";
-import CountryPicker from "react-native-country-picker-modal";
-import { CountryCode, getCountries } from "libphonenumber-js";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { ThemedText } from "./ThemedText";
+import {
+  CountryCode,
+  getCallingCode,
+  getCountryByCode,
+  getFlagEmoji,
+} from "@/constants/Countries";
 
 export type ThemedPhoneNumberInputProps = TextInputProps & {
   phoneValue: string;
@@ -11,7 +21,9 @@ export type ThemedPhoneNumberInputProps = TextInputProps & {
   onBlur: () => void;
   onPhoneChange?: (phoneNumber: string) => void;
   onCountryCodeChange?: (countryCode: CountryCode) => void;
+  onCountryPickerPress?: () => void;
 };
+
 export function ThemedPhoneNumberInput({
   style,
   phoneValue,
@@ -19,40 +31,37 @@ export function ThemedPhoneNumberInput({
   onBlur,
   onPhoneChange,
   onCountryCodeChange,
+  onCountryPickerPress,
   ...rest
 }: ThemedPhoneNumberInputProps) {
-  const [isPickerVisible, setIsPickerVisible] = useState(false);
-  const textColor = useThemeColor({}, "text");
-  const backgroundColor = useThemeColor({}, "background");
-  const countryCodes = getCountries();
+  const borderColor = useThemeColor({}, "icon");
+  const country = getCountryByCode(countryCode);
+  const callingCode = country?.callingCode || "";
+  const flag = getFlagEmoji(countryCode);
 
   return (
     <View style={styles.container}>
-      <CountryPicker
-        theme={{
-          onBackgroundTextColor: textColor,
-          backgroundColor: backgroundColor,
-        }}
-        countryCodes={countryCodes as any}
-        countryCode={countryCode as any}
-        withCallingCodeButton
-        withCallingCode
-        withFilter
-        withFlag
-        visible={isPickerVisible}
-        onSelect={(country) => {
-          onCountryCodeChange?.(country.cca2 as CountryCode);
-          setIsPickerVisible(false);
-        }}
-        onClose={() => setIsPickerVisible(false)}
-      />
+      {/* Country selector button */}
+      <Pressable
+        style={[styles.countryButton, { borderColor }]}
+        onPress={onCountryPickerPress}
+      >
+        <Text style={styles.flag}>{flag}</Text>
+        <ThemedText style={styles.callingCode}>+{callingCode}</ThemedText>
+        <ThemedText style={styles.dropdownArrow}>▼</ThemedText>
+      </Pressable>
 
+      {/* Phone number input */}
       <ThemedTextInput
         placeholder="Phone Number"
         keyboardType="phone-pad"
         value={phoneValue}
         onBlur={onBlur}
-        onChangeText={onPhoneChange}
+        onChangeText={(text) => {
+          // Only allow digits
+          const cleaned = text.replace(/[^0-9]/g, "");
+          onPhoneChange?.(cleaned);
+        }}
         inputMode="numeric"
         style={styles.input}
         {...rest}
@@ -65,12 +74,29 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 8,
   },
   countryButton: {
-    padding: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderRadius: 8,
+    gap: 6,
+  },
+  flag: {
+    fontSize: 24,
+  },
+  callingCode: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  dropdownArrow: {
+    fontSize: 10,
+    opacity: 0.5,
   },
   input: {
     flex: 1,
-    marginLeft: 8,
   },
 });

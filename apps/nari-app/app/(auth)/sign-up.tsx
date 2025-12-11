@@ -11,33 +11,14 @@ import { useAuth } from "@/components/auth/useAuth";
 import z from "zod";
 import Environment from "@/constants/Environment";
 import { ThemedPhoneNumberInput } from "@/components/ThemedPhoneNumberInput";
+import { CountryPickerBottomSheet } from "@/components/CountryPickerBottomSheet";
 import {
-  isValidPhoneNumber,
   CountryCode,
-  getCountries,
-  parsePhoneNumberWithError,
-  getCountryCallingCode,
-} from "libphonenumber-js";
-
-const normalizePhoneNumber = (
-  phoneInput: string,
-  countryCode: CountryCode
-): string => {
-  try {
-    const phoneNumber = parsePhoneNumberWithError(phoneInput, countryCode);
-
-    if (phoneNumber) {
-      // Return the national number without leading zeros
-      return phoneNumber.nationalNumber;
-    }
-
-    // If parsing fails, manually remove leading zeros and non-digits
-    return phoneInput.replace(/^0+/, "").replace(/[^0-9]/g, "");
-  } catch (error) {
-    // Fallback: remove leading zeros and non-digits
-    return phoneInput.replace(/^0+/, "").replace(/[^0-9]/g, "");
-  }
-};
+  getCallingCode,
+  normalizePhoneNumber,
+  validatePhoneNumber,
+  isValidCountryCode,
+} from "@/constants/Countries";
 
 const signUpSchema = z
   .object({
@@ -64,10 +45,8 @@ const signUpSchema = z
       });
     }
 
-    if (
-      data.countryCode.length !== 2 ||
-      !getCountries().includes(data.countryCode.toUpperCase() as CountryCode)
-    ) {
+    // Validate country code
+    if (!isValidCountryCode(data.countryCode)) {
       ctx.addIssue({
         code: "custom",
         message: "Invalid country code",
@@ -81,7 +60,10 @@ const signUpSchema = z
       data.countryCode as CountryCode
     );
 
-    if (!isValidPhoneNumber(normalizedPhone, data.countryCode as CountryCode)) {
+    // Validate phone number
+    if (
+      !validatePhoneNumber(normalizedPhone, data.countryCode as CountryCode)
+    ) {
       ctx.addIssue({
         code: "custom",
         message: "Invalid phone number",
@@ -109,9 +91,10 @@ export default function SignUpScreen() {
   >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const errorColor = useThemeColor({}, "errorMessage");
-
-  // Get themed colors for dynamic theming
   const borderColor = useThemeColor({}, "icon");
+
+  const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
 
   const handleSignUp = async () => {
     try {
@@ -120,9 +103,7 @@ export default function SignUpScreen() {
 
       // Validate the entire form
       const validatedData = signUpSchema.parse(formData);
-      const callingCode = getCountryCallingCode(
-        validatedData.countryCode as CountryCode
-      );
+      const callingCode = getCallingCode(validatedData.countryCode);
       console.log("Sign up with:", validatedData, callingCode);
       const {
         data: { session },
@@ -175,7 +156,7 @@ export default function SignUpScreen() {
       try {
         signUpSchema.shape.phone.parse(normalizedPhone);
         if (
-          !isValidPhoneNumber(
+          !validatePhoneNumber(
             normalizedPhone,
             formData.countryCode as CountryCode
           )
@@ -298,13 +279,13 @@ export default function SignUpScreen() {
           <View style={styles.inputContainer}>
             <ThemedPhoneNumberInput
               phoneValue={formData.phone}
-              countryCode={formData.countryCode as CountryCode}
+              countryCode={formData.countryCode}
               onBlur={() => onPhoneChange(formData.phone, true)}
               onPhoneChange={onPhoneChange}
               onCountryCodeChange={(code: CountryCode) => {
                 onTextChange("countryCode", code);
-                validateField("countryCode", code);
               }}
+              onCountryPickerPress={() => setShowCountryPicker(true)}
               style={[
                 styles.input,
                 errors.phone && { borderColor: errorColor, borderWidth: 1 },
@@ -407,6 +388,14 @@ export default function SignUpScreen() {
             onPress={handleSignUp}
             style={styles.signUpButton}
           />
+
+          <ThemedButton
+            title={"Toggle bottom sheet"}
+            variant="filled"
+            size="large"
+            onPress={() => setShowBottomSheet(!showBottomSheet)}
+            style={styles.signUpButton}
+          />
         </View>
 
         {/* Footer */}
@@ -421,6 +410,17 @@ export default function SignUpScreen() {
           </Pressable>
         </View>
       </ScrollView>
+
+      {/* Country Picker Bottom Sheet */}
+      <CountryPickerBottomSheet
+        isVisible={showCountryPicker}
+        onClose={() => setShowCountryPicker(false)}
+        selectedCountryCode={formData.countryCode as CountryCode}
+        onSelectCountry={(code: CountryCode) => {
+          onTextChange("countryCode", code);
+          validateField("countryCode", code);
+        }}
+      />
     </ThemedView>
   );
 }
