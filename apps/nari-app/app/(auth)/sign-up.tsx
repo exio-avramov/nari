@@ -92,8 +92,6 @@ export default function SignUpScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const errorColor = useThemeColor({}, "errorMessage");
   const borderColor = useThemeColor({}, "icon");
-
-  const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showCountryPicker, setShowCountryPicker] = useState(false);
 
   const handleSignUp = async () => {
@@ -115,8 +113,7 @@ export default function SignUpScreen() {
       );
 
       if (error) Alert.alert("Sign Up Error", error.message);
-      if (!session)
-        Alert.alert("Please check your email to confirm your account");
+      if (!session) router.replace("/(auth)/sign-up-success");
 
       setIsSubmitting(false);
     } catch (error) {
@@ -386,14 +383,6 @@ export default function SignUpScreen() {
             variant="filled"
             size="large"
             onPress={handleSignUp}
-            style={styles.signUpButton}
-          />
-
-          <ThemedButton
-            title={"Toggle bottom sheet"}
-            variant="filled"
-            size="large"
-            onPress={() => setShowBottomSheet(!showBottomSheet)}
             style={styles.signUpButton}
           />
         </View>

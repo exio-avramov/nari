@@ -18,6 +18,9 @@ export const Colors = {
     buttonBackground: "#055E7A",
     buttonText: "#FFFFFF",
 
+    // Success color
+    success: "#22c55e",
+
     // Bottom sheet styling
     backdrop: "#000000",
     bottomSheetBackground: "#FFFFFF",
@@ -38,6 +41,9 @@ export const Colors = {
     // Higher contrast vs dark background
     buttonBackground: "#1BA5D2",
     buttonText: "#002A36",
+
+    // Success color
+    success: "#10b981",
 
     // Bottom sheet styling
     backdrop: "#000000",
