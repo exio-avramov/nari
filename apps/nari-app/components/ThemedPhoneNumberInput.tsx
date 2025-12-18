@@ -35,42 +35,60 @@ export function ThemedPhoneNumberInput({
   ...rest
 }: ThemedPhoneNumberInputProps) {
   const borderColor = useThemeColor({}, "icon");
+  const phonePreviewTextColor = useThemeColor({}, "text");
   const country = getCountryByCode(countryCode);
   const callingCode = country?.callingCode || "";
   const flag = getFlagEmoji(countryCode);
 
-  return (
-    <View style={styles.container}>
-      {/* Country selector button */}
-      <Pressable
-        style={[styles.countryButton, { borderColor }]}
-        onPress={onCountryPickerPress}
-      >
-        <Text style={styles.flag}>{flag}</Text>
-        <ThemedText style={styles.callingCode}>+{callingCode}</ThemedText>
-        <ThemedText style={styles.dropdownArrow}>▼</ThemedText>
-      </Pressable>
+  // Generate the final phone number that will be saved
+  const finalPhoneNumber = phoneValue ? `(+${callingCode}) ${phoneValue}` : "";
 
-      {/* Phone number input */}
-      <ThemedTextInput
-        placeholder="Phone Number"
-        keyboardType="phone-pad"
-        value={phoneValue}
-        onBlur={onBlur}
-        onChangeText={(text) => {
-          // Only allow digits
-          const cleaned = text.replace(/[^0-9]/g, "");
-          onPhoneChange?.(cleaned);
-        }}
-        inputMode="numeric"
-        style={styles.input}
-        {...rest}
-      />
+  return (
+    <View style={styles.outerContainer}>
+      <View style={styles.container}>
+        {/* Country selector button */}
+        <Pressable
+          style={[styles.countryButton, { borderColor }]}
+          onPress={onCountryPickerPress}
+        >
+          <Text style={styles.flag}>{flag}</Text>
+          <ThemedText style={styles.callingCode}>+{callingCode}</ThemedText>
+          <ThemedText style={styles.dropdownArrow}>▼</ThemedText>
+        </Pressable>
+
+        {/* Phone number input */}
+        <ThemedTextInput
+          placeholder="Phone Number"
+          keyboardType="phone-pad"
+          value={phoneValue}
+          onBlur={onBlur}
+          onChangeText={(text) => {
+            // Only allow digits
+            const cleaned = text.replace(/[^0-9]/g, "");
+            onPhoneChange?.(cleaned);
+          }}
+          inputMode="numeric"
+          style={styles.input}
+          {...rest}
+        />
+      </View>
+
+      {/* Display final phone number */}
+      {finalPhoneNumber && (
+        <ThemedText
+          style={[styles.finalNumber, { color: phonePreviewTextColor }]}
+        >
+          {finalPhoneNumber}
+        </ThemedText>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    gap: 4,
+  },
   container: {
     flexDirection: "row",
     alignItems: "center",
@@ -98,5 +116,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+  },
+  finalNumber: {
+    fontSize: 14,
+    marginTop: 2,
+    fontStyle: "italic",
   },
 });
