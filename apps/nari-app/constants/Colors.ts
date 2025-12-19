@@ -7,6 +7,7 @@ export const Colors = {
   light: {
     text: "#2E3A40",
     background: "#FCFAF8",
+    tabBarBackground: "#FFFFFF",
 
     icon: "#7C8A92",
     tabIconDefault: "#9BAAB1",
@@ -21,6 +22,17 @@ export const Colors = {
     // Success color
     success: "#22c55e",
 
+    // Danger/logout color
+    danger: "#DC2626",
+    dangerBackground: "#DC2626",
+    dangerText: "#FFFFFF",
+
+    // Divider color
+    divider: "rgba(0, 0, 0, 0.08)",
+
+    // Settings button background
+    settingsButton: "#FFFFFF",
+
     // Bottom sheet styling
     backdrop: "#000000",
     bottomSheetBackground: "#FFFFFF",
@@ -31,6 +43,7 @@ export const Colors = {
   dark: {
     text: "#E6EEF1",
     background: "#23292C",
+    tabBarBackground: "#1A1E20",
 
     icon: "#B0BCC2",
     tabIconDefault: "#A2B0B6",
@@ -44,6 +57,17 @@ export const Colors = {
 
     // Success color
     success: "#10b981",
+
+    // Danger/logout color
+    danger: "#EF4444",
+    dangerBackground: "#EF4444",
+    dangerText: "#FFFFFF",
+
+    // Divider color
+    divider: "rgba(255, 255, 255, 0.08)",
+
+    // Settings button background
+    settingsButton: "#2D3336",
 
     // Bottom sheet styling
     backdrop: "#000000",

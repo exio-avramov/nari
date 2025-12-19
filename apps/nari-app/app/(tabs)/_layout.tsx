@@ -1,29 +1,23 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform, StyleSheet } from "react-native";
-
+import { StyleSheet } from "react-native";
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
-import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const tabIconSelected = useThemeColor({}, "tabIconSelected");
+  const tabBarBackground = useThemeColor({}, "tabBarBackground");
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tabIconSelected,
+        tabBarHideOnKeyboard: true,
+        tabBarActiveTintColor: tabIconSelected,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
-        tabBarStyle: [
-          styles.tabBar,
-          Platform.select({
-            ios: { position: "absolute" },
-            default: {},
-          }),
-        ],
+        tabBarStyle: [styles.tabBar, { backgroundColor: tabBarBackground }],
       }}
     >
       <Tabs.Screen
@@ -54,11 +48,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="account"
+        name="settings"
         options={{
-          title: "Account",
+          title: "Settings",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="account" color={color} />
+            <IconSymbol size={28} name="settings" color={color} />
           ),
         }}
       />
@@ -68,7 +62,8 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    position: "absolute",
   },
 });

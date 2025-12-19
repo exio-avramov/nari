@@ -18,9 +18,13 @@ const MAPPING = {
   calendar: "calendar-month",
   magnifyingglass: "search",
   chat: "chat-bubble-outline",
-  account: "person-outline",
+  settings: "settings",
   eye: "visibility",
   "eye.slash": "visibility-off",
+  "chevron.right": "chevron-right",
+  "door.left.hand.open": "logout",
+  "person.circle": "account-circle",
+  bell: "notifications",
 } as IconMapping;
 
 /**
